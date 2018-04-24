@@ -213,7 +213,11 @@ instance (Typeable1 m, Typeable a) => Typeable (PerhapsT m a) where
   typeOf = typeOfDefault
 
 perhapsTTyCon :: TyCon
+#if MIN_VERSION_base(4,4,0)
+perhapsTTyCon = mkTyCon3 "perhaps" "Control.Monad.Perhaps" "PerhapsT"
+#else
 perhapsTTyCon = mkTyCon "Control.Monad.Perhaps.PerhapsT"
+#endif
 {-# NOINLINE perhapsTTyCon #-}
 #else
 #define Typeable1 Typeable
