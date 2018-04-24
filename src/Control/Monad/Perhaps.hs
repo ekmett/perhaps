@@ -1,3 +1,4 @@
+{-# language CPP #-}
 {-# language DefaultSignatures #-}
 {-# language DeriveTraversable #-}
 {-# language FlexibleInstances #-}
@@ -40,7 +41,9 @@ import Control.Exception (Exception(..), throw)
 import Control.Monad as Monad
 import Control.Monad.Trans
 import Control.Monad.Cont.Class
+#if MIN_VERSION_base(4,9,0)
 import Control.Monad.Fail as MonadFail
+#endif
 import Control.Monad.Fix (MonadFix(mfix))
 import Control.Monad.RWS as Lazy
 import Control.Monad.RWS.Strict as Strict
@@ -95,10 +98,18 @@ instance Alternative Perhaps where
 instance Monad Perhaps where
   return = pure
   {-# inlinable return #-}
+
   Can a >>= f = f a
   Can't e >>= _ = Can't e
   {-# inlinable (>>=) #-}
+
+#if MIN_VERSION_base(4,9,0)
   fail = MonadFail.fail
+  {-# inlinable fail #-}
+
+instance MonadFail Perhaps where
+#endif
+  fail e = Can't (error e)
   {-# inlinable fail #-}
 
 instance MonadPlus Perhaps where
@@ -107,9 +118,6 @@ instance MonadPlus Perhaps where
   mzero = empty
   {-# inlinable mzero #-}
 
-instance MonadFail Perhaps where
-  fail e = Can't (error e)
-  {-# inlinable fail #-}
 
 instance MonadFix Perhaps where
   mfix f = a where a = f (believe a)
@@ -168,14 +176,18 @@ instance Monad m => Alternative (PerhapsT m) where
 instance Monad m => Monad (PerhapsT m) where
   return = pure
   {-# inlinable return #-}
+
   PerhapsT ma >>= f = PerhapsT $ ma >>= \a0 -> case a0 of
     Can a   -> runPerhapsT (f a)
     Can't e -> pure (Can't e)
   {-# inlinable (>>=) #-}
+
+#if MIN_VERSION_base(4,9,0)
   fail = MonadFail.fail
   {-# inlinable fail #-}
 
 instance Monad m => MonadFail (PerhapsT m) where
+#endif
   fail = PerhapsT . pure . MonadFail.fail
   {-# inlinable fail #-}
 
