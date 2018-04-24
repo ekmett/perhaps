@@ -97,6 +97,22 @@ import GHC.Generics
 -- as morally the same as 'Maybe', except when things go wrong, you can
 -- pass along a complaint, rather than take what you'd get from
 -- 'Data.Maybe.fromJust'.
+--
+-- >>> import Control.Exception
+-- >>> let x = excuse Overflow :: Perhaps ()
+--
+-- Attempting to 'Show' a 'Perhaps' value is hazardous, as it will contain an embedded exception.
+--
+-- >>> x
+-- Can't *** Exception: arithmetic overflow
+--
+-- Recovery is possible as 'Can\'t' isn't strict in its argument.
+--
+-- >>> x <|> Can ()
+-- Can ()
+--
+-- >>> x `seq` ()
+-- ()
 
 data Perhaps a
   = Can a
