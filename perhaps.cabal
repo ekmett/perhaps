@@ -34,6 +34,9 @@ library
     transformers        >= 0.3 && < 0.6,
     transformers-compat >= 0.3 && < 1
 
+  if impl(ghc >= 7.2) && impl(ghc < 7.6)
+    build-depends: generic-deriving >= 0.3.1 && < 1.13
+
   if impl(ghc < 7.10)
     build-depends: void >= 0.5.0 && < 1
 

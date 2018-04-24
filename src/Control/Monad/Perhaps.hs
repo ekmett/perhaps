@@ -1,5 +1,7 @@
 {-# language CPP #-}
+#if __GLASGOW_HASKELL__ >= 702
 {-# language DefaultSignatures #-}
+#endif
 {-# language DeriveFoldable #-}
 {-# language DeriveFunctor #-}
 {-# language DeriveTraversable #-}
@@ -75,6 +77,9 @@ import Data.Traversable
 import Data.Semigroup
 #endif
 import Data.Void
+#ifdef MIN_VERSION_generic_deriving
+import Generics.Deriving
+#endif
 #if __GLASGOW_HASKELL__ >= 706
 import GHC.Generics
 #endif
@@ -87,10 +92,10 @@ data Perhaps a
   = Can a
   | Can't Void
   deriving (
-#if __GLASGOW_HASKELL__ >= 706
+#if __GLASGOW_HASKELL__ >= 702
     Generic,
 #endif
-#if __GLASGOW_HASKELL__ >= 710
+#if __GLASGOW_HASKELL__ >= 706
     Generic1,
 #endif
     Typeable, Data, Eq, Ord, Read, Show, Functor, Foldable, Traversable
@@ -178,10 +183,10 @@ mayhap (Can't _) = Nothing
 
 newtype PerhapsT m a = PerhapsT { runPerhapsT :: m (Perhaps a) }
   deriving (
-#if __GLASGOW_HASKELL__ >= 706
+#if __GLASGOW_HASKELL__ >= 702
     Generic,
 #endif
-#if __GLASGOW_HASKELL__ >= 710
+#if __GLASGOW_HASKELL__ >= 706
     Generic1,
 #endif
 #if __GLASGOW_HASKELL__ >= 708
@@ -363,8 +368,10 @@ mapPerhapsT f = PerhapsT . f . runPerhapsT
 class MonadPlus m => MonadPerhaps m where
   -- | This is a monad homomorphism
   perhaps :: Perhaps a -> m a
+#if __GLASGOW_HASKELL__ >= 702
   default perhaps :: (m ~ t n, MonadTrans t, MonadPerhaps n) => Perhaps a -> m a
   perhaps = lift . perhaps
+#endif
 
   -- | Fail with an exception as an excuse instead of just a string.
   excuse :: Exception e => e -> m a
@@ -378,11 +385,34 @@ instance Monad m => MonadPerhaps (PerhapsT m) where
   perhaps = PerhapsT . return
   {-# inlinable perhaps #-}
 
-instance MonadPerhaps m => MonadPerhaps (Lazy.StateT s m)
-instance MonadPerhaps m => MonadPerhaps (Strict.StateT s m)
-instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Lazy.WriterT w m)
-instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Strict.WriterT w m)
-instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Lazy.RWST r w s m)
-instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Strict.RWST r w s m)
-instance MonadPerhaps m => MonadPerhaps (ReaderT r m)
-instance MonadPerhaps m => MonadPerhaps (IdentityT m)
+instance MonadPerhaps m => MonadPerhaps (Lazy.StateT s m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance MonadPerhaps m => MonadPerhaps (Strict.StateT s m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Lazy.WriterT w m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Strict.WriterT w m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Lazy.RWST r w s m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Strict.RWST r w s m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance MonadPerhaps m => MonadPerhaps (ReaderT r m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
+
+instance MonadPerhaps m => MonadPerhaps (IdentityT m) where
+  perhaps = lift . perhaps
+  {-# inlinable perhaps #-}
