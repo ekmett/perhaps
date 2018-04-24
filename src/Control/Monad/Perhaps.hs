@@ -1,6 +1,12 @@
 {-# language CPP #-}
 {-# language DefaultSignatures #-}
+{-# language DeriveFoldable #-}
+{-# language DeriveFunctor #-}
 {-# language DeriveTraversable #-}
+{-# language DeriveDataTypeable #-}
+#if __GLASGOW_HASKELL__ >= 706
+{-# language DeriveGeneric #-}
+#endif
 {-# language FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
 {-# language Safe #-}
@@ -56,10 +62,14 @@ import Control.Monad.Trans.Identity (IdentityT(..))
 import qualified Control.Monad.Writer.Lazy as Lazy
 import qualified Control.Monad.Writer.Strict as Strict
 import Control.Monad.Zip (MonadZip(munzip, mzipWith))
+import Data.Data
 #if __GLASGOW_HASKELL__ < 804
 import Data.Semigroup
 #endif
 import Data.Void
+#if __GLASGOW_HASKELL__ >= 706
+import GHC.Generics
+#endif
 
 --------------------------------------------------------------------------------
 -- * Perhaps
@@ -68,7 +78,15 @@ import Data.Void
 data Perhaps a
   = Can a
   | Can't Void
-  deriving (Eq, Ord, Read, Show, Functor, Foldable, Traversable)
+  deriving (
+#if __GLASGOW_HASKELL__ >= 706
+    Generic,
+#endif
+#if __GLASGOW_HASKELL__ >= 710
+    Generic1,
+#endif
+    Typeable, Data, Eq, Ord, Read, Show, Functor, Foldable, Traversable
+  )
 
 instance Semigroup a => Semigroup (Perhaps a) where
   Can a   <> Can b   = Can (a <> b)
@@ -122,7 +140,6 @@ instance MonadPlus Perhaps where
   mzero = empty
   {-# inlinable mzero #-}
 
-
 instance MonadFix Perhaps where
   mfix f = a where a = f (believe a)
   {-# inlinable mfix #-}
@@ -152,29 +169,42 @@ mayhap (Can't _) = Nothing
 --------------------------------------------------------------------------------
 
 newtype PerhapsT m a = PerhapsT { runPerhapsT :: m (Perhaps a) }
-  deriving (Functor, Foldable, Traversable)
+  deriving (
+#if __GLASGOW_HASKELL__ >= 706
+    Generic,
+#endif
+#if __GLASGOW_HASKELL__ >= 710
+    Generic1,
+#endif
+    Typeable, Functor, Foldable, Traversable
+  )
 
 deriving instance Eq (m (Perhaps a)) => Eq (PerhapsT m a)
 deriving instance Ord (m (Perhaps a)) => Ord (PerhapsT m a)
 deriving instance Show (m (Perhaps a)) => Show (PerhapsT m a)
 deriving instance Read (m (Perhaps a)) => Read (PerhapsT m a)
+deriving instance (Data (m (Perhaps a)), Typeable m, Typeable a) => Data (PerhapsT m a)
 
 instance Monad m => Applicative (PerhapsT m) where
-  pure = PerhapsT . pure . pure
+  pure = PerhapsT . return . pure
   {-# inlinable pure #-}
   PerhapsT mf <*> PerhapsT ma = PerhapsT $ mf >>= \f0 -> case f0 of
-    Can't e -> pure $ Can't e
+    Can't e -> return $ Can't e
+#if __GLASGOW_HASKELL__ < 710
+    Can f -> fmap f `liftM` ma
+#else
     Can f -> fmap f <$> ma
+#endif
   {-# inlinable (<*>) #-}
 
 instance Monad m => Alternative (PerhapsT m) where
-  empty = PerhapsT (pure empty)
+  empty = PerhapsT (return empty)
   {-# inlinable empty #-}
   PerhapsT ma <|> PerhapsT mb = PerhapsT $ ma >>= \a0 -> case a0 of
-    a@Can{} -> pure a
+    a@Can{} -> return a
     e@Can't{} -> mb >>= \b0 -> case b0 of
-      b@Can{} -> pure b
-      Can't{} -> pure e
+      b@Can{} -> return b
+      Can't{} -> return e
   {-# inlinable (<|>) #-}
 
 instance Monad m => Monad (PerhapsT m) where
@@ -183,7 +213,7 @@ instance Monad m => Monad (PerhapsT m) where
 
   PerhapsT ma >>= f = PerhapsT $ ma >>= \a0 -> case a0 of
     Can a   -> runPerhapsT (f a)
-    Can't e -> pure (Can't e)
+    Can't e -> return (Can't e)
   {-# inlinable (>>=) #-}
 
 #if MIN_VERSION_base(4,9,0)
@@ -191,9 +221,9 @@ instance Monad m => Monad (PerhapsT m) where
   {-# inlinable fail #-}
 
 instance Monad m => MonadFail (PerhapsT m) where
-  fail = PerhapsT . pure . MonadFail.fail
+  fail = PerhapsT . return . MonadFail.fail
 #else
-  fail = PerhapsT . pure . Monad.fail
+  fail = PerhapsT . return . Monad.fail
 #endif
   {-# inlinable fail #-}
 
@@ -214,7 +244,11 @@ instance MonadFix m => MonadFix (PerhapsT m) where
   {-# inlinable mfix #-}
 
 instance MonadTrans PerhapsT where
+#if __GLASGOW_HASKELL__ < 710
+  lift = PerhapsT . liftM Can
+#else
   lift = PerhapsT . fmap Can
+#endif
   {-# inlinable lift #-}
 
 instance MonadIO m => MonadIO (PerhapsT m) where
@@ -304,7 +338,7 @@ instance MonadPerhaps Perhaps where
   {-# inlinable perhaps #-}
 
 instance Monad m => MonadPerhaps (PerhapsT m) where
-  perhaps = PerhapsT . pure
+  perhaps = PerhapsT . return
   {-# inlinable perhaps #-}
   
 instance MonadPerhaps m => MonadPerhaps (Lazy.StateT s m)
