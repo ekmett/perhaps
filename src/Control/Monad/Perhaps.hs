@@ -187,7 +187,10 @@ newtype PerhapsT m a = PerhapsT { runPerhapsT :: m (Perhaps a) }
 #if __GLASGOW_HASKELL__ >= 708
     Typeable,
 #endif
-    Functor, Foldable, Traversable
+#if __GLASGOW_HASKELL__ >= 710
+    Functor,
+#endif
+    Foldable, Traversable
   )
 
 deriving instance Eq (m (Perhaps a)) => Eq (PerhapsT m a)
@@ -213,6 +216,11 @@ perhapsTTyCon = mkTyCon "Control.Monad.Perhaps.PerhapsT"
 #endif
 
 deriving instance (Data (m (Perhaps a)), Typeable1 m, Typeable a) => Data (PerhapsT m a)
+
+#if __GLASGOW_HASKELL__ < 710
+instance Monad m => Functor (PerhapsT m) where
+  fmap f (PerhapsT ma) = PerhapsT $ liftM (fmap f) ma
+#endif
 
 instance Monad m => Applicative (PerhapsT m) where
   pure = PerhapsT . return . pure
