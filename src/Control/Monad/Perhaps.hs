@@ -11,9 +11,9 @@
 #endif
 {-# language FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
-#if __GLASGOW_HASKELL__ >= 704 && __GLASGOW_HASKELL__ < 708
-{-# language Trustworthy #-} -- manual Typeable instances
-#else
+#if __GLASGOW_HASKELL__ >= 702 && __GLASGOW_HASKELL__ < 708
+{-# language Trustworthy #-}
+#elif __GLASGOW_HASKELL__ >= 708
 {-# language Safe #-}
 #endif
 {-# language StandaloneDeriving #-}
