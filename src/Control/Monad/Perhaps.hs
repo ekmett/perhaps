@@ -272,10 +272,12 @@ mapPerhapsT f = PerhapsT . f . runPerhapsT
 --------------------------------------------------------------------------------
 
 class MonadPlus m => MonadPerhaps m where
+  -- | This is a monad homomorphism
   perhaps :: Perhaps a -> m a
   default perhaps :: (m ~ t n, MonadTrans t, MonadPerhaps n) => Perhaps a -> m a
   perhaps = lift . perhaps
 
+  -- | Fail with an exception as an excuse instead of just a string.
   excuse :: Exception e => e -> m a
   excuse = perhaps . Can't . throw 
 
