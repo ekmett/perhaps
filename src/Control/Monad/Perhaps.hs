@@ -55,6 +55,9 @@ import Control.Monad.Trans.Identity (IdentityT(..))
 import Control.Monad.Writer as Lazy
 import Control.Monad.Writer.Strict as Strict
 import Control.Monad.Zip (MonadZip(munzip, mzipWith))
+#if __GLASGOW_HASKELL__ < 804
+import Data.Semigroup
+#endif
 import Data.Void
 
 --------------------------------------------------------------------------------

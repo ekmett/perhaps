@@ -32,10 +32,13 @@ library
     base                >= 4.5 && < 5,
     mtl                 >= 2.1 && < 2.3,
     transformers        >= 0.3 && < 0.6,
-    transformers-compat >= 0.3 && < 0.7
+    transformers-compat >= 0.3 && < 1
 
   if impl(ghc < 7.10)
     build-depends: void >= 0.5.0 && < 1
+
+  if impl(ghc < 8.0)
+    build-depends: semigroups >= 0.10 && < 1
 
   exposed-modules:
     Control.Monad.Perhaps
