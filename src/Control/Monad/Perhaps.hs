@@ -45,14 +45,15 @@ import Control.Monad.Cont.Class
 import Control.Monad.Fail as MonadFail
 #endif
 import Control.Monad.Fix (MonadFix(mfix))
-import Control.Monad.RWS as Lazy
-import Control.Monad.RWS.Strict as Strict
+import Control.Monad.RWS.Class
+import qualified Control.Monad.RWS.Lazy as Lazy
+import qualified Control.Monad.RWS.Strict as Strict
 import Control.Monad.Reader
 import Control.Monad.Signatures
-import Control.Monad.State as Lazy
-import Control.Monad.State.Strict as Strict
+import qualified Control.Monad.State.Lazy as Lazy
+import qualified Control.Monad.State.Strict as Strict
 import Control.Monad.Trans.Identity (IdentityT(..))
-import Control.Monad.Writer as Lazy
+import qualified Control.Monad.Writer.Lazy as Lazy
 import qualified Control.Monad.Writer.Strict as Strict
 import Control.Monad.Zip (MonadZip(munzip, mzipWith))
 #if __GLASGOW_HASKELL__ < 804
@@ -190,8 +191,10 @@ instance Monad m => Monad (PerhapsT m) where
   {-# inlinable fail #-}
 
 instance Monad m => MonadFail (PerhapsT m) where
-#endif
   fail = PerhapsT . pure . MonadFail.fail
+#else
+  fail = PerhapsT . pure . Monad.fail
+#endif
   {-# inlinable fail #-}
 
 instance Monad m => MonadPlus (PerhapsT m) where
