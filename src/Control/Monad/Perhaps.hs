@@ -106,7 +106,7 @@ import GHC.Generics
 -- >>> x
 -- Can't *** Exception: arithmetic overflow
 --
--- Recovery is possible as 'Can\'t' isn't strict in its argument.
+-- Recovery is possible as 'Can't' isn't strict in its argument.
 --
 -- >>> x <|> Can ()
 -- Can ()
