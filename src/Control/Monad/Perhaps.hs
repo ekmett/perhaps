@@ -1,9 +1,6 @@
 {-# language DefaultSignatures #-}
 {-# language DeriveTraversable #-}
-{-# language EmptyCase #-}
-{-# language EmptyDataDeriving #-}
 {-# language FlexibleInstances #-}
-{-# language LambdaCase #-}
 {-# language MultiParamTypeClasses #-}
 {-# language Safe #-}
 {-# language StandaloneDeriving #-}
@@ -153,7 +150,7 @@ deriving instance Read (m (Perhaps a)) => Read (PerhapsT m a)
 instance Monad m => Applicative (PerhapsT m) where
   pure = PerhapsT . pure . pure
   {-# inlinable pure #-}
-  PerhapsT mf <*> PerhapsT ma = PerhapsT $ mf >>= \case
+  PerhapsT mf <*> PerhapsT ma = PerhapsT $ mf >>= \f0 -> case f0 of
     Can't e -> pure $ Can't e
     Can f -> fmap f <$> ma
   {-# inlinable (<*>) #-}
@@ -161,9 +158,9 @@ instance Monad m => Applicative (PerhapsT m) where
 instance Monad m => Alternative (PerhapsT m) where
   empty = PerhapsT (pure empty)
   {-# inlinable empty #-}
-  PerhapsT ma <|> PerhapsT mb = PerhapsT $ ma >>= \case
+  PerhapsT ma <|> PerhapsT mb = PerhapsT $ ma >>= \a0 -> case a0 of
     a@Can{} -> pure a
-    e@Can't{} -> mb >>= \case
+    e@Can't{} -> mb >>= \b0 -> case b0 of
       b@Can{} -> pure b
       Can't{} -> pure e
   {-# inlinable (<|>) #-}
@@ -171,7 +168,7 @@ instance Monad m => Alternative (PerhapsT m) where
 instance Monad m => Monad (PerhapsT m) where
   return = pure
   {-# inlinable return #-}
-  PerhapsT ma >>= f = PerhapsT $ ma >>= \case
+  PerhapsT ma >>= f = PerhapsT $ ma >>= \a0 -> case a0 of
     Can a   -> runPerhapsT (f a)
     Can't e -> pure (Can't e)
   {-# inlinable (>>=) #-}
