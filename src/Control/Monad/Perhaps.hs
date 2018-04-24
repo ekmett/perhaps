@@ -56,7 +56,6 @@ import Control.Monad.Cont.Class
 #if MIN_VERSION_base(4,9,0)
 import Control.Monad.Fail as MonadFail
 #endif
-import Control.Monad.Fix (MonadFix(mfix))
 import Control.Monad.RWS.Class
 import qualified Control.Monad.RWS.Lazy as Lazy
 import qualified Control.Monad.RWS.Strict as Strict
