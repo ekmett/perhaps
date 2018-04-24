@@ -2,7 +2,7 @@ name:          perhaps
 category:      Data
 version:       0
 license:       BSD2
-cabal-version: 1.18
+cabal-version: 1.12
 license-file:  LICENSE.md
 author:        Edward A. Kmett
 maintainer:    Edward A. Kmett <ekmett@gmail.com>
@@ -31,7 +31,7 @@ extra-source-files:
 custom-setup
   setup-depends:
     base >= 4 && <5,
-    Cabal,
+    Cabal >= 1.10 && < 2.3,
     cabal-doctest >= 1 && <1.1
 
 source-repository head
@@ -68,8 +68,8 @@ test-suite doctests
   main-is: doctests.hs
   default-language: Haskell2010
   build-depends:
-    base      >= 4,
-    distributive,
+    base,
+    perhaps,
     doctest   >= 0.11.1 && <0.16
   ghc-options: -Wall -threaded
   hs-source-dirs: tests
