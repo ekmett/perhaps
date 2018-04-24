@@ -2,7 +2,7 @@ name:          perhaps
 category:      Data
 version:       0
 license:       BSD2
-cabal-version: >= 1.10
+cabal-version: 1.18
 license-file:  LICENSE.md
 author:        Edward A. Kmett
 maintainer:    Edward A. Kmett <ekmett@gmail.com>
