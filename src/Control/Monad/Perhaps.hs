@@ -63,6 +63,10 @@ import qualified Control.Monad.Writer.Lazy as Lazy
 import qualified Control.Monad.Writer.Strict as Strict
 import Control.Monad.Zip (MonadZip(munzip, mzipWith))
 import Data.Data
+#if __GLASGOW_HASKELL__ < 710
+import Data.Foldable
+import Data.Traversable
+#endif
 #if __GLASGOW_HASKELL__ < 804
 import Data.Semigroup
 #endif
