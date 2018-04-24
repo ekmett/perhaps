@@ -38,17 +38,9 @@ addons:
   apt:
     packages: &apt_packages
       - ghc-ppa-tools
-      - alex-3.1.4
-      - happy-1.19.5
 
 matrix:
   include:
-    #- compiler: "ghc-7.0.4"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
-    #  addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.0.4], sources: [hvr-ghc]}}
-    #- compiler: "ghc-7.2.2"
-    # env: TEST=--disable-tests BENCH=--disable-benchmarks
-    #  addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.2.2], sources: [hvr-ghc]}}
     - compiler: "ghc-7.4.2"
     # env: TEST=--disable-tests BENCH=--disable-benchmarks
       addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.4.2], sources: [hvr-ghc]}}
@@ -75,17 +67,18 @@ matrix:
       addons: {apt: {packages: [*apt_packages,cabal-install-head,ghc-head], sources: [hvr-ghc]}}
 
   allow_failures:
-    # - compiler: "ghc-7.0.4"
-    # - compiler: "ghc-7.2.2"
     - compiler: "ghc-head"
 
 before_install:
   - HC=${CC}
   - HCPKG=${HC/ghc/ghc-pkg}
   - unset CC
+  - export HLINTVER=2.1.3
+  - mkdir ~/.hlint
+  - curl -L https://github.com/ndmitchell/hlint/releases/download/v$HLINTVER/hlint-$HLINTVER-x86_64-linux.tar.gz | tar -xz --strip-components=1 -C ~/.hlint
   - ROOTDIR=$(pwd)
   - mkdir -p $HOME/.local/bin
-  - "PATH=/opt/ghc/bin:/opt/ghc-ppa-tools/bin:$HOME/local/bin:$PATH"
+  - "PATH=~/.hlint:/opt/ghc/bin:/opt/ghc-ppa-tools/bin:$HOME/local/bin:$PATH"
   - HCNUMVER=$(( $(${HC} --numeric-version|sed -E 's/([0-9]+)\.([0-9]+)\.([0-9]+).*/\1 * 10000 + \2 * 100 + \3/') ))
   - echo $HCNUMVER
 
@@ -140,7 +133,6 @@ script:
 
   # build & run tests, build benchmarks
   - cabal new-build -w ${HC} ${TEST} ${BENCH} all
-  - if [ "x$TEST" = "x--enable-tests" ]; then cabal new-test -w ${HC} ${TEST} ${BENCH} all; fi
 
   # cabal check
   - (cd perhaps-* && cabal check)
@@ -148,6 +140,10 @@ script:
   # haddock
   - rm -rf ./dist-newstyle
   - if $HADDOCK; then cabal new-haddock -w ${HC} ${TEST} ${BENCH} all; else echo "Skipping haddock generation";fi
+
+  # hlint
+  - hlint --version
+  - (cd perhaps-* && hlint src)
 
 # REGENDATA ["-o",".travis.yml","--irc-channel=irc.freenode.org#haskell-lens","--no-no-tests-no-bench","--no-installed","cabal.project"]
 # EOF
