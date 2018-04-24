@@ -381,6 +381,9 @@ instance MonadPerhaps Perhaps where
   perhaps = id
   {-# inlinable perhaps #-}
 
+  excuse = Can't . throw
+  {-# inline conlike excuse #-}
+
 instance Monad m => MonadPerhaps (PerhapsT m) where
   perhaps = PerhapsT . return
   {-# inlinable perhaps #-}
