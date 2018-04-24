@@ -34,4 +34,5 @@ library
     transformers
 
   exposed-modules:
+    Control.Monad.Perhaps
     Data.Perhaps
