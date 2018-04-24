@@ -66,7 +66,9 @@ import qualified Control.Monad.State.Strict as Strict
 import Control.Monad.Trans.Identity (IdentityT(..))
 import qualified Control.Monad.Writer.Lazy as Lazy
 import qualified Control.Monad.Writer.Strict as Strict
+#if __GLASGOW_HASKELL__ >= 702
 import Control.Monad.Zip (MonadZip(munzip, mzipWith))
+#endif
 import Data.Data
 #if __GLASGOW_HASKELL__ < 710
 import Data.Foldable
@@ -156,6 +158,7 @@ instance MonadFix Perhaps where
   mfix f = a where a = f (believe a)
   {-# inlinable mfix #-}
 
+#if __GLASGOW_HASKELL__ >= 702
 instance MonadZip Perhaps where
   munzip (Can (a,b)) = (Can a, Can b)
   munzip (Can't e) = (Can't e, Can't e)
@@ -164,6 +167,7 @@ instance MonadZip Perhaps where
   mzipWith _ (Can't e) _ = Can't e
   mzipWith _ _ (Can't e) = Can't e
   {-# inlinable mzipWith #-}
+#endif
 
 -- | partial!
 believe :: Perhaps a -> a
@@ -278,11 +282,13 @@ instance Monad m => MonadPlus (PerhapsT m) where
   mplus = (<|>)
   {-# inlinable mplus #-}
 
+#if __GLASGOW_HASKELL__ >= 702
 instance MonadZip m => MonadZip (PerhapsT m) where
   mzipWith f (PerhapsT a) (PerhapsT b) = PerhapsT $ mzipWith (liftA2 f) a b
   {-# inlinable mzipWith #-}
   munzip m = (fmap fst m, fmap snd m)
   {-# inlinable munzip #-}
+#endif
 
 instance MonadFix m => MonadFix (PerhapsT m) where
   mfix f = PerhapsT $ mfix (runPerhapsT . f . believe)
