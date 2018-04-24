@@ -9,7 +9,11 @@
 #endif
 {-# language FlexibleInstances #-}
 {-# language MultiParamTypeClasses #-}
+#if __GLASGOW_HASKELL__ >= 704 && __GLASGOW_HASKELL__ < 708
+{-# language Trustworthy #-} -- manual Typeable instances
+#else
 {-# language Safe #-}
+#endif
 {-# language StandaloneDeriving #-}
 {-# language TypeFamilies #-}
 {-# language UndecidableInstances #-}
