@@ -89,6 +89,15 @@ import GHC.Generics
 -- * Perhaps
 --------------------------------------------------------------------------------
 
+-- | This monad occupies the middle ground between 'Maybe' and 'Either'
+-- in that you can get out an informative error but aren't able to care
+-- about its contents, except via bottoms.
+--
+-- Since bottoms are indistinguishable in pure code, one can view this
+-- as morally the same as 'Maybe', except when things go wrong, you can
+-- pass along a complaint, rather than take what you'd get from
+-- 'Data.Maybe.fromJust'.
+
 data Perhaps a
   = Can a
   | Can't Void
@@ -169,7 +178,8 @@ instance MonadZip Perhaps where
   {-# inlinable mzipWith #-}
 #endif
 
--- | partial!
+-- | This partial function can be used like 'fromJust', but throws the user
+-- error.
 believe :: Perhaps a -> a
 believe (Can a) = a
 believe (Can't e) = absurd e
