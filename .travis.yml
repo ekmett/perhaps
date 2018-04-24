@@ -41,6 +41,15 @@ addons:
 
 matrix:
   include:
+    - compiler: "ghc-7.4.2"
+    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.4.2], sources: [hvr-ghc]}}
+    - compiler: "ghc-7.6.3"
+    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.6.3], sources: [hvr-ghc]}}
+    - compiler: "ghc-7.8.4"
+    # env: TEST=--disable-tests BENCH=--disable-benchmarks
+      addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.8.4], sources: [hvr-ghc]}}
     - compiler: "ghc-7.10.3"
     # env: TEST=--disable-tests BENCH=--disable-benchmarks
       addons: {apt: {packages: [*apt_packages,cabal-install-2.0,ghc-7.10.3], sources: [hvr-ghc]}}
