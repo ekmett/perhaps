@@ -25,7 +25,7 @@
 -----------------------------------------------------------------------------
 
 module Control.Monad.Perhaps
-  ( 
+  (
   -- * Maybe with an undisclosed error
     Perhaps(..)
   , believe
@@ -100,7 +100,7 @@ instance Semigroup a => Semigroup (Perhaps a) where
   {-# inlinable (<>) #-}
 
 instance Semigroup a => Monoid (Perhaps a) where
-  mempty = empty 
+  mempty = empty
   {-# inlinable mempty #-}
   mappend = (<>)
   {-# inlinable mappend #-}
@@ -180,14 +180,35 @@ newtype PerhapsT m a = PerhapsT { runPerhapsT :: m (Perhaps a) }
 #if __GLASGOW_HASKELL__ >= 710
     Generic1,
 #endif
-    Typeable, Functor, Foldable, Traversable
+#if __GLASGOW_HASKELL__ >= 708
+    Typeable,
+#endif
+    Functor, Foldable, Traversable
   )
 
 deriving instance Eq (m (Perhaps a)) => Eq (PerhapsT m a)
 deriving instance Ord (m (Perhaps a)) => Ord (PerhapsT m a)
 deriving instance Show (m (Perhaps a)) => Show (PerhapsT m a)
 deriving instance Read (m (Perhaps a)) => Read (PerhapsT m a)
-deriving instance (Data (m (Perhaps a)), Typeable m, Typeable a) => Data (PerhapsT m a)
+
+#if __GLASGOW_HASKELL__ >= 704 && __GLASGOW_HASKELL__ < 708
+instance Typeable1 m => Typeable1 (PerhapsT m) where
+  typeOf1 dma = mkTyConApp perhapsTTyCon [typeOf1 (m dma)]
+    where
+      m :: PerhapsT m a -> m a
+      m = undefined
+
+instance (Typeable1 m, Typeable a) => Typeable (PerhapsT m a) where
+  typeOf = typeOfDefault
+
+perhapsTTyCon :: TyCon
+perhapsTTyCon = mkTyCon "Control.Monad.Perhaps.PerhapsT"
+{-# NOINLINE perhapsTTyCon #-}
+#else
+#define Typeable1 Typeable
+#endif
+
+deriving instance (Data (m (Perhaps a)), Typeable1 m, Typeable a) => Data (PerhapsT m a)
 
 instance Monad m => Applicative (PerhapsT m) where
   pure = PerhapsT . return . pure
@@ -335,7 +356,7 @@ class MonadPlus m => MonadPerhaps m where
 
   -- | Fail with an exception as an excuse instead of just a string.
   excuse :: Exception e => e -> m a
-  excuse = perhaps . Can't . throw 
+  excuse = perhaps . Can't . throw
 
 instance MonadPerhaps Perhaps where
   perhaps = id
@@ -344,7 +365,7 @@ instance MonadPerhaps Perhaps where
 instance Monad m => MonadPerhaps (PerhapsT m) where
   perhaps = PerhapsT . return
   {-# inlinable perhaps #-}
-  
+
 instance MonadPerhaps m => MonadPerhaps (Lazy.StateT s m)
 instance MonadPerhaps m => MonadPerhaps (Strict.StateT s m)
 instance (MonadPerhaps m, Monoid w) => MonadPerhaps (Lazy.WriterT w m)
