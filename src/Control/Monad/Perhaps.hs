@@ -6,7 +6,7 @@
 {-# language DeriveFunctor #-}
 {-# language DeriveTraversable #-}
 {-# language DeriveDataTypeable #-}
-#if __GLASGOW_HASKELL__ >= 706
+#if __GLASGOW_HASKELL__ >= 702
 {-# language DeriveGeneric #-}
 #endif
 {-# language FlexibleInstances #-}
