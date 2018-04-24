@@ -202,7 +202,7 @@ deriving instance Ord (m (Perhaps a)) => Ord (PerhapsT m a)
 deriving instance Show (m (Perhaps a)) => Show (PerhapsT m a)
 deriving instance Read (m (Perhaps a)) => Read (PerhapsT m a)
 
-#if __GLASGOW_HASKELL__ >= 704 && __GLASGOW_HASKELL__ < 708
+#if __GLASGOW_HASKELL__ < 708
 instance Typeable1 m => Typeable1 (PerhapsT m) where
   typeOf1 dma = mkTyConApp perhapsTTyCon [typeOf1 (m dma)]
     where
