@@ -50,6 +50,7 @@ module Control.Monad.Perhaps
 
 import Control.Applicative
 import Control.Exception (Exception(..), throw)
+import Control.Comonad
 import Control.Monad as Monad
 import Control.Monad.Trans
 import Control.Monad.Cont.Class
@@ -193,6 +194,11 @@ instance MonadZip Perhaps where
   mzipWith _ _ (Can't e) = Can't e
   {-# inlinable mzipWith #-}
 #endif
+
+instance Comonad Perhaps where
+  duplicate (Can a) = Can (Can a)
+  duplicate (Can't e) = Can't e
+  extract = believe
 
 -- | This partial function can be used like 'fromJust', but throws the user
 -- error.
