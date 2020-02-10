@@ -55,6 +55,7 @@ import Control.Monad.Trans
 import Control.Monad.Cont.Class
 #if MIN_VERSION_base(4,9,0)
 import Control.Monad.Fail as MonadFail
+import Data.Functor.Classes
 #endif
 import Control.Monad.RWS.Class
 import qualified Control.Monad.RWS.Lazy as Lazy
@@ -126,6 +127,28 @@ data Perhaps a
 #endif
     Typeable, Data, Eq, Ord, Read, Show, Functor, Foldable, Traversable
   )
+
+#if MIN_VERSION_base(4,9,0)
+
+instance Eq1 Perhaps where
+  liftEq _ (Can't _) _ = False
+  liftEq _ _ (Can't _) = False
+  liftEq eq (Can a) (Can b) = eq a b
+
+instance Ord1 Perhaps where
+  liftCompare _ (Can't _) (Can't _) = EQ
+  liftCompare _ (Can't _) _ = LT
+  liftCompare _ _ (Can't _) = GT
+  liftCompare comp (Can a) (Can b) = comp a b
+
+instance Show1 Perhaps where
+  liftShowsPrec _ _ _ (Can't _) = error "Can't"
+  liftShowsPrec sp _ d (Can a) = showsUnaryWith sp "Can" d a
+
+instance Read1 Perhaps where
+  liftReadsPrec rp _ = readsData (readsUnaryWith rp "Can" Can)
+
+#endif
 
 instance Semigroup a => Semigroup (Perhaps a) where
   Can a   <> Can b   = Can (a <> b)
